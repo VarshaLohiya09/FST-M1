@@ -1,110 +1,79 @@
-package Activities;
+package Project;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
+import java.util.List;
+
 public class Activity3 {
-    // Driver Declaration
+    WebDriverWait wait;
     AndroidDriver driver;
 
-    // Set up method
     @BeforeClass
-    public void setUp() throws MalformedURLException {
-        // Desired Capabilities
+    public void setup() throws MalformedURLException {
         UiAutomator2Options options = new UiAutomator2Options();
         options.setPlatformName("android");
         options.setAutomationName("UiAutomator2");
-        options.setAppPackage("com.miui.calculator");
-        options.setAppActivity(".cal.CalculatorActivity");
+        options.setAppPackage("com.google.android.keep");
+        options.setAppActivity(".activities.BrowseActivity");
         options.noReset();
 
-        // Server Address
+        // Server URL
         URL serverURL = new URL("http://localhost:4723/wd/hub");
 
-        // Driver Initialization
+        // Driver initialization
         driver = new AndroidDriver(serverURL, options);
+        wait = new WebDriverWait(driver, Duration.ofSeconds(20));
     }
 
-    // Test method
-    @Test
-    public void additionTest() {
-        // Perform the calculation
-        driver.findElement(AppiumBy.id("btn_5_s")).click();
-        driver.findElement(AppiumBy.accessibilityId("plus")).click();
-        driver.findElement(AppiumBy.id("btn_9_s")).click();
-        driver.findElement(AppiumBy.accessibilityId("equals")).click();
+    @Test(priority = 1)
+    public void addnote() {
+        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.id("com.google.android.keep:id/new_note_button"))).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.id("com.google.android.keep:id/editable_title"))).sendKeys("Lunch Time");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.id("com.google.android.keep:id/edit_note_text"))).sendKeys("its lunch time now");
+        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.id("com.google.android.keep:id/menu_reminder"))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.id("com.google.android.keep:id/menu_text"))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId("Navigate up"))).click();
 
-        // Find the result
-        String result = driver.findElement(AppiumBy.id("result")).getText();
+        boolean b = wait.until(ExpectedConditions.visibilityOfElementLocated(AppiumBy.id("com.google.android.keep:id/index_note_title"))).isDisplayed();
+        System.out.println(b);
+        if (b == true) {
+            List<WebElement> titles = driver.findElements(AppiumBy.id("com.google.android.keep:id/index_note_title"));
+            for (WebElement title : titles) {
+                String title_value = title.getText();
+                List<WebElement> reminders = driver.findElements(AppiumBy.id("com.google.android.keep:id/reminder_chip_text"));
+                for (WebElement reminder_list : reminders) {
+                    String re = reminder_list.getText();
+                    if (title_value.equalsIgnoreCase("Lunch Time") && re.equalsIgnoreCase("Today, 6:00 PM")) {
+                        System.out.println(re);
+                        System.out.println(title_value);
+                        Assert.assertEquals(title_value, "Lunch Time");
+                        Assert.assertEquals(re, "Today, 6:00 PM");
+                        System.out.println("Title with Reminder Exists");
+                        break;
+                    }
 
-        // Assertion
-        Assert.assertEquals(result, "=14");
+                }
+            }
+        }
+        //Assert.assertEquals("title","Activity1");
     }
 
-    // Test method
-    @Test
-    public void subtractTest() {
-        // Perform the calculation
-        driver.findElement(AppiumBy.id("btn_1_s")).click();
-        driver.findElement(AppiumBy.id("btn_0_s")).click();
-        driver.findElement(AppiumBy.accessibilityId("minus")).click();
-        driver.findElement(AppiumBy.id("btn_5_s")).click();
-        driver.findElement(AppiumBy.accessibilityId("equals")).click();
-
-        // Find the result
-        String result = driver.findElement(AppiumBy.id("result")).getText();
-
-        // Assertion
-        Assert.assertEquals(result, "=5");
-    }
-
-    // Test method
-    @Test
-    public void multiplyTest() {
-        // Perform the calculation
-        driver.findElement(AppiumBy.id("btn_5_s")).click();
-        driver.findElement(AppiumBy.accessibilityId("multiply")).click();
-        driver.findElement(AppiumBy.id("btn_1_s")).click();
-        driver.findElement(AppiumBy.id("btn_0_s")).click();
-        driver.findElement(AppiumBy.id("btn_0_s")).click();
-        driver.findElement(AppiumBy.accessibilityId("equals")).click();
-
-        // Find the result
-        String result = driver.findElement(AppiumBy.id("result")).getText();
-
-        // Assertion
-        Assert.assertEquals(result, "=500");
-    }
-
-    // Test method
-    @Test
-    public void divideTest() {
-        // Perform the calculation
-        driver.findElement(AppiumBy.id("btn_5_s")).click();
-        driver.findElement(AppiumBy.id("btn_0_s")).click();
-        driver.findElement(AppiumBy.accessibilityId("divide")).click();
-        driver.findElement(AppiumBy.id("btn_2_s")).click();
-        driver.findElement(AppiumBy.accessibilityId("equals")).click();
-
-        // Find the result
-        String result = driver.findElement(AppiumBy.id("result")).getText();
-
-        // Assertion
-        Assert.assertEquals(result, "=25");
-    }
-
-    // Tear down method
     @AfterClass
-    public void tearDown() {
-        // Close the app
+    public void close() {
         driver.quit();
     }
+
+
 }

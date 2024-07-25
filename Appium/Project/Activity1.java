@@ -1,9 +1,10 @@
-package Activities;
+package project_appium;
 
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.By;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -14,9 +15,9 @@ import java.net.URL;
 import java.time.Duration;
 
 public class Activity1 {
+
     // Driver Declaration
     AndroidDriver driver;
-    WebDriver wait;
 
     // Set up method
     @BeforeClass
@@ -24,9 +25,9 @@ public class Activity1 {
         // Desired Capabilities
         UiAutomator2Options options = new UiAutomator2Options();
         options.setPlatformName("android");
-        options.setAutomationName("UiAutomator2");
-        options.setAppPackage("com.miui.calculator");
-        options.setAppActivity(".cal.CalculatorActivity");
+        options.setAutomationName("UIAutomator2");
+        options.setAppPackage("com.google.android.apps.tasks");
+        options.setAppActivity(".ui.TaskListsActivity");
         options.noReset();
 
         // Server Address
@@ -34,30 +35,33 @@ public class Activity1 {
 
         // Driver Initialization
         driver = new AndroidDriver(serverURL, options);
-        //wait = new WebDriverWait(driver.Duration.ofSeconds(10));
     }
 
-    // Test method
     @Test
-    public void multiplyTest() {
-        // Perform the calculation
-        driver.findElement(AppiumBy.id("btn_5_s")).click();
-        driver.findElement(AppiumBy.accessibilityId("multiply")).click();
-        driver.findElement(AppiumBy.id("btn_8_s")).click();
-        driver.findElement(AppiumBy.accessibilityId("equals")).click();
+    public void addTasks() throws InterruptedException {
+        String tasks[] = new String[3];
+        tasks[0] = "Complete Activity with Google Tasks";
+        tasks[1] = "Complete Activity with Google Keep";
+        tasks[2] = "Complete the second Activity Google Keep";
 
-        // Find the result
-        String result = driver.findElement(AppiumBy.id("result")).getText();
+        // task addition & assertions
+        By title = AppiumBy.id("add_task_title");
 
-        // Assertion
-        Assert.assertEquals(result, "= 40");
+        for (int i = 0; i < 3; i++) {
+            driver.findElement(AppiumBy.id("tasks_fab")).click();
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(3));
+            wait.until(ExpectedConditions.presenceOfElementLocated(title)).sendKeys(tasks[i]);
+            driver.findElement(AppiumBy.id("add_task_done")).click();
+            wait.until(ExpectedConditions.presenceOfElementLocated(AppiumBy.id("task_name")));
+            String res = driver.findElement(AppiumBy.id("task_name")).getText();
+            Assert.assertEquals(res, tasks[i]);
+        }
+
     }
-
 
     // Tear down method
     @AfterClass
     public void tearDown() {
-        // Close the app
         driver.quit();
     }
 }
